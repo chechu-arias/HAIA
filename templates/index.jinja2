@@ -1,0 +1,224 @@
+<html>
+
+    <head>
+
+        <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+        <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/style.css') }}">
+
+        <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    </head>
+
+    <body>
+
+        {% if error != "" %}
+            <script>
+                $( document ).ready(function() {
+
+                    let h1_elem = document.getElementById("error_msg");
+
+                    h1_elem.innerHTML="{{error}}";
+
+                    setTimeout(function(){
+                        h1_elem.innerHTML="";
+                    }, 3000);
+
+                });
+            </script>
+        {% endif %}
+
+        <h3 id="error_msg" class="centered"></h3>
+
+        <div id="container">
+
+            {% if show_video %}
+
+                <div id="central_panel" class="bordered">
+
+                    <div id="div_video" class="centered">
+
+                        {% if show_video %}
+                            <video width="1080" height="720" controls>
+                                <source src="{{video_filepath}}" type="video/mp4">
+                                <track label="Deutsch" kind="subtitles" srclang="de" src="{{subtitle_filepath}}">
+                                Your browser does not support the video tag.
+                            </video>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+            {% if show_video %}
+                <div id="side_panel" class="bordered">
+            {% else %}
+                <div id="div_form" class="bordered">
+            {% endif %}
+
+                <form method="POST" action="/" enctype="multipart/form-data">
+
+                    <div id="div_select_video_file" class="form_elem">
+                        <label id="select_video_file" class="elem">
+                            <input type="file" id="uploader_file" name="video" accept="video/*">
+                            <span id="select_video_file_text">Seleccionar video</span>
+                        </label>
+                        <img id="img_check_video" class="hidden" src="{{ url_for('static',filename='images/check.png') }}">
+                    </div>
+
+                    <div id="div_video_lang" class="form_elem">
+                        <div id="div_label_video_lang">
+                            <label for="video_lang">Idioma del vídeo:</label>
+                        </div>
+                        <select name="video_lang" class="elem" id="select_video_lang" data-placeholder="Indica el idioma...">
+                            <option value="af-ZA">Afrikaans</option>
+                            <option value="ar-AE">Arabic, Gulf</option>
+                            <option value="ar-SA">Arabic, Modern Standard</option>
+                            <option value="zh-CN">Chinese, Simplified</option>
+                            <option value="zh-TW">Chinese, Traditional</option>
+                            <option value="da-DK">Danish</option>
+                            <option value="nl-NL">Dutch</option>
+                            <option value="en-AU">English, Australian</option>
+                            <option value="en-GB">English, British</option>
+                            <option value="en-IN">English, Indian</option>
+                            <option value="en-IE">English, Irish</option>
+                            <option value="en-NZ">English, New Zealand</option>
+                            <option value="en-AB">English, Scottish</option>
+                            <option value="en-ZA">English, South African</option>
+                            <option value="en-SU">English, US</option>
+                            <option value="en-WL">English, Welsh</option>
+                            <option value="fr-FR">French</option>
+                            <option value="fr-CA">French, Canadian</option>
+                            <option value="de-DE">German</option>
+                            <option value="de-CH">German, Swiss</option>
+                            <option value="he-IL">Hebrew</option>
+                            <option value="hi-IN">Hindi, Indian</option>
+                            <option value="id-ID">Indonesian</option>
+                            <option value="it-IT">Italian</option>
+                            <option value="ja-JA">Japanese</option>
+                            <option value="ko-KR">Korean</option>
+                            <option value="ms-MY">Malay</option>
+                            <option value="pt-PT">Portuguese</option>
+                            <option value="pt-BR">Portuguese, Brazilian</option>
+                            <option value="ru-RU">Russian</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="es-US">Spanish, US</option>
+                            <option value="ta-IN">Tamil</option>
+                            <option value="te-IN">Telugu</option>
+                            <option value="th-TH">Thai</option>
+                            <option value="tr-TR">Turkish</option>
+                        </select>
+                    </div>
+
+                    <div id="div_subtitles_lang" class="form_elem">
+                        <label for="subtitles_lang">Idioma de los subtítulos:</label>
+                        <br>
+                        <select name="subtitles_lang" class="elem" id="select_subtitles_lang">
+                            <option value="af-ZA">Afrikaans</option>
+                            <option value="ar-AE">Arabic, Gulf</option>
+                            <option value="ar-SA">Arabic, Modern Standard</option>
+                            <option value="zh-CN">Chinese, Simplified</option>
+                            <option value="zh-TW">Chinese, Traditional</option>
+                            <option value="da-DK">Danish</option>
+                            <option value="nl-NL">Dutch</option>
+                            <option value="en-AU">English, Australian</option>
+                            <option value="en-GB">English, British</option>
+                            <option value="en-IN">English, Indian</option>
+                            <option value="en-IE">English, Irish</option>
+                            <option value="en-NZ">English, New Zealand</option>
+                            <option value="en-AB">English, Scottish</option>
+                            <option value="en-ZA">English, South African</option>
+                            <option value="en-SU">English, US</option>
+                            <option value="en-WL">English, Welsh</option>
+                            <option value="fr-FR">French</option>
+                            <option value="fr-CA">French, Canadian</option>
+                            <option value="de-DE">German</option>
+                            <option value="de-CH">German, Swiss</option>
+                            <option value="he-IL">Hebrew</option>
+                            <option value="hi-IN">Hindi, Indian</option>
+                            <option value="id-ID">Indonesian</option>
+                            <option value="it-IT">Italian</option>
+                            <option value="ja-JA">Japanese</option>
+                            <option value="ko-KR">Korean</option>
+                            <option value="ms-MY">Malay</option>
+                            <option value="pt-PT">Portuguese</option>
+                            <option value="pt-BR">Portuguese, Brazilian</option>
+                            <option value="ru-RU">Russian</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="es-US">Spanish, US</option>
+                            <option value="ta-IN">Tamil</option>
+                            <option value="te-IN">Telugu</option>
+                            <option value="th-TH">Thai</option>
+                            <option value="tr-TR">Turkish</option>
+                        </select>
+                    </div>
+
+                    <div id="div_submit_button">
+                        <input type="submit" class="elem button" id="submit_button" value="Generar">
+                    </div>
+                </form>
+            </div>
+
+            <script>
+                $('#uploader_file').on('change', function(e){
+
+                    if (document.getElementById("uploader_file").value !== "") {
+
+                        document.getElementById("select_video_file").classList.remove("elem");
+                        document.getElementById("select_video_file").classList.add("elem");
+                        document.getElementById("select_video_file").classList.add("good_elem");
+                        document.getElementById("select_video_file_text").innerHTML = "Cambiar";
+                        document.getElementById("img_check_video").classList.remove("hidden");
+
+                    }
+                });
+
+                //https://sweetalert2.github.io/
+
+                $('#submit_button').on('click', function(e){
+
+                    e.preventDefault();
+                    console.log(document.getElementById("uploader_file").value);
+
+                    if (document.getElementById("uploader_file").value !== "") {
+
+                        let form = $(this).parents('form');
+                        Swal.fire({
+                            title: "¿Quieres subir este vídeo para añadirle subtítulos?",
+                            text: "Esta acción subirá el vídeo a la plataforma y puede tardar un poco.",
+                            showCancelButton: true,
+                            confirmButtonColor: "#DD6B55",
+                            confirmButtonText: "Confirmar",
+                            cancelButtonText: "Cancelar"
+                        }).then(function(result) {
+                            if (result.isConfirmed) {
+                                form.submit();
+                            } else {
+                                document.getElementById("uploader_file").value = null;
+                            }
+                        });
+
+                    } else {
+
+                        let h1_elem = document.getElementById("error_msg");
+
+                        h1_elem.innerHTML="No puedes generar una transcripción sin seleccionar un vídeo.";
+
+                        setTimeout(function(){
+                            h1_elem.innerHTML="";
+                        }, 3000);
+
+                    }
+                });
+            </script>
+
+        </div>
+
+    </body>
+
+</html>
+
+<!--
+
+-->
