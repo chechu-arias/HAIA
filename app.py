@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 
 
-from transcription import SUBTITLE_LOCAL_DIRECTORY, VIDEO_LOCAL_DIRECTORY, all_work, dummy
+from transcription import SUBTITLE_LOCAL_DIRECTORY, VIDEO_LOCAL_DIRECTORY, generate_video_subtitles, dummy
 
 os.makedirs(VIDEO_LOCAL_DIRECTORY, exist_ok=True)
 
@@ -70,7 +70,7 @@ def load_index():
 
         print("SUBS", subtitles_lang)
 
-        #response = all_work(server_video_filename, video_lang, subtitles_lang)
+        #response = generate_video_subtitles(server_video_filename, video_lang, subtitles_lang)
         response = dummy()
 
         if response["code"] != 200:

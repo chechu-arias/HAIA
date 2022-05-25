@@ -8,21 +8,36 @@ import logging
 
 from botocore.exceptions import ClientError
 
-BUCKET_NAME_FOLDER = "proyecto-haia"
+BUCKET_NAME_FOLDER = "proyecto-haia-transcription"
 BUCKET_NAME = f"s3://{BUCKET_NAME_FOLDER}/"
 
 FILE_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
-
 SUBTITLE_LOCAL_DIRECTORY = os.path.join(FILE_DIRECTORY, "subtitles")
 VIDEO_LOCAL_DIRECTORY = os.path.join(FILE_DIRECTORY, "upload_videos")
 
-def upload_file(local_file_path, file_name):
-    """Upload a file to an S3 bucket
-    :param file_name: File to upload
-    :return: True if file was uploaded, else False
-    """
+################################ BUCKET MANAGEMENT ################################
 
-    local_file = os.path.join(VIDEO_LOCAL_DIRECTORY, file_name)
+def clear_bucket():
+    '''
+        Deletes all content in bucket BUCKET_NAME_FOLDER
+    '''
+
+    s3 = boto3.resource('s3')
+
+    bucket = s3.Bucket(BUCKET_NAME_FOLDER)
+
+    bucket.objects.all().delete()
+
+
+def upload_file(local_file_path, file_name):
+    '''
+        Args:
+            - local_file_path: path to target file
+
+            - file_name: name of target file in bucket
+    '''
+
+    local_file = os.path.join(local_file_path, file_name)
 
     s3_client = boto3.client('s3')
 
@@ -30,15 +45,14 @@ def upload_file(local_file_path, file_name):
 
     return True
 
-def clear_bucket():
-
-    s3 = boto3.resource('s3')
-    bucket = s3.Bucket(BUCKET_NAME_FOLDER)
-
-    bucket.objects.all().delete()
-
 
 def download_file(path_to_save, file_name):
+    '''
+        Args:
+            - path_to_save: path to save target file
+
+            - file_name: target file in bucket
+    '''
 
     local_file = os.path.join(path_to_save, file_name)
 
@@ -49,11 +63,21 @@ def download_file(path_to_save, file_name):
     return response
 
 
+################################ AWS TRANSCRIBE ################################
+
+
 def transcribe_video(video_filename, video_lang):
+    '''
+    Args:
+        - video_filename: target video filename
+
+        - video_lang: language of the target video
+    '''
 
     filename_without_extension = video_filename.split(".")[0]
 
     transcribe = boto3.client('transcribe', 'us-east-1')
+
     job_uri = f"{BUCKET_NAME}{video_filename}"
 
     try:
@@ -67,24 +91,36 @@ def transcribe_video(video_filename, video_lang):
         },
         OutputBucketName = BUCKET_NAME_FOLDER,
         LanguageCode = video_lang,
-        Subtitles = {'Formats': [
-                'srt'
-            ],
-            'OutputStartIndex': 1
+        Subtitles = {'Formats': 
+                        ['srt'],
+                    'OutputStartIndex': 1
         }
     )
 
     while True:
+
         status = transcribe.get_transcription_job(TranscriptionJobName=filename_without_extension)
+
         if status['TranscriptionJob']['TranscriptionJobStatus'] in ['COMPLETED', 'FAILED']:
+
             break
+
         time.sleep(5)
 
     print(status)
 
     return status
 
-def all_work(video_filename, video_lang, subtitle_lang):
+
+def generate_video_subtitles(video_filename, video_lang, subtitle_lang):
+    '''
+    Args:
+        - video_filename: target video filename
+
+        - video_lang: language of the target video
+
+        - subtitle_lang: language of the subtitles
+    '''
 
     clear_bucket()
 
