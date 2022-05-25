@@ -1,0 +1,8 @@
+Windows Powershell:
+
+virtualenv haia_venv -p python.exe
+. .\haia_venv\Scripts\activate
+pip install -r .\requirements.txt
+$env:FLASK_APP="app"
+$env:FLASK_ENV="development"
+flask run
