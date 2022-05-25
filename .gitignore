@@ -1,5 +1,5 @@
-/upload_videos/
-/subtitles/
-/haia_env/
-/__pycache__/
-/thanks.txt
+upload_videos
+subtitles
+haia_venv
+__pycache__
+thanks.txt
