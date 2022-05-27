@@ -13,5 +13,5 @@ s3transfer==0.5.2
 six==1.16.0
 urllib3==1.26.9
 Werkzeug==2.1.2
-windows-curses==2.3.0
+#windows-curses==2.3.0
 zipp==3.8.0

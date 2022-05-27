@@ -31,31 +31,7 @@
 
         <div id="container">
 
-            {% if show_video %}
-
-                <div id="central_panel" class="bordered">
-
-                    <div id="div_video" class="centered">
-
-                        {% if show_video %}
-                            <video width="1080" height="720" controls>
-                                <source src="{{ url_for('static',filename='es_tortilla_patata.mp4') }}" type="video/mp4">
-                                <track kind="subtitles" srclang="en" src="{{ url_for('static',filename='en-GB_es_tortilla_patatas.vtt') }}" default>
-                                Your browser does not support the video tag.
-                            </video>
-                        {% endif %}
-
-                    </div>
-
-                </div>
-
-            {% endif %}
-
-            {% if show_video %}
-                <div id="side_panel" class="bordered">
-            {% else %}
-                <div id="div_form" class="bordered">
-            {% endif %}
+            <div id="div_form" class="bordered">
 
                 <form id="form" method="POST" action="/" enctype="multipart/form-data">
 

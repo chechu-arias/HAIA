@@ -6,7 +6,7 @@ import json
 import re
 import flask
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 
 from werkzeug.utils import secure_filename
 
@@ -57,7 +57,7 @@ def load_index():
         video_filename =  request.files['video']
         video_extension = "." + video_filename.filename.split(".")[-1]
         if video_extension not in VIDEO_FILENAME_FORMATS:
-            return render_template('index.jinja2', error="El video no tiene una extensión válida.", show_video=False)
+            return render_template('index.jinja2', error="El video no tiene una extensión válida.")
 
         server_video_filename = secure_filename(video_filename.filename)
         video_filepath = os.path.join(VIDEO_LOCAL_DIRECTORY, server_video_filename)
@@ -69,20 +69,26 @@ def load_index():
         subtitles_lang = request.form.get('subtitles_lang')
 
         response = generate_video_subtitles(server_video_filename, video_lang, subtitles_lang)
-        #response = dummy(server_video_filename, subtitles_lang)
 
         if response["code"] != 200:
-            return render_template('index.jinja2', error="Se ha producido un error generando los subtítulos.", show_video=False)
+            return render_template('index.jinja2', error="Se ha producido un error generando los subtítulos.")
 
         return {
             "video_filename": server_video_filename,
             "subtitles_filename": response["subtitles_filename"]
         }
 
-    return render_template('index.jinja2', error="", show_video=False)
+    return render_template('index.jinja2', error="")
 
-# https://stackoverflow.com/questions/26971491/how-do-i-link-to-images-not-in-static-folder-in-flask
-#TODO: Add descargar subtitulos, descargar video con subtitulos y generar otro video
+@app.route('/subtitles/<path:filename>')
+def get_subtitles(filename):
+    return send_from_directory(SUBTITLE_LOCAL_DIRECTORY, filename, as_attachment=True)
+
+@app.route('/videos/<path:filename>')
+def get_video(filename):
+    return send_from_directory(VIDEO_LOCAL_DIRECTORY, filename, as_attachment=True)
+
+
 @app.route('/show_video', methods=["GET"])
 def show_video():
 
@@ -90,9 +96,8 @@ def show_video():
     subtitle_filename = request.args.get("subtitles_filename")
 
     return render_template(
-        'index.jinja2',
+        'show_video.jinja2',
         error="",
-        show_video=True,
-        video_filepath=os.path.join(VIDEO_LOCAL_DIRECTORY, video_filename),
-        subtitle_filepath=os.path.join(SUBTITLE_LOCAL_DIRECTORY, subtitle_filename)
+        video_filepath=video_filename,
+        subtitle_filepath=subtitle_filename
     )

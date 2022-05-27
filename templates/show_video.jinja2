@@ -1,0 +1,117 @@
+<html>
+
+    <head>
+
+        <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+        <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/style.css') }}">
+
+    </head>
+
+    <body>
+
+        <div id="container_show_video" class="bordered">
+
+            <div id="central_panel">
+
+                <div id="div_video" class="centered">
+
+                    <video width="1080" height="720" controls>
+                        <source src="{{ url_for('get_video', filename=video_filepath) }}" type="video/mp4">
+                        <track kind="subtitles" srclang="en" src="{{ url_for('get_subtitles', filename=subtitle_filepath) }}" default>
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+
+            </div>
+
+            <div id="button_panel">
+
+                <button id="button_download_vtt" class="elem button" onclick=" location.href = '{{ url_for('get_subtitles', filename=subtitle_filepath) }}'; ">Descargar los subtítulos</button>
+                <button id="button_return_index" class="elem button" onclick=" location.href = '/'; ">Subtitular otro vídeo</button>
+
+            </div>
+
+            <script>
+                $('#uploader_file').on('change', function(e){
+
+                    if (document.getElementById("uploader_file").value !== "") {
+
+                        document.getElementById("select_video_file").classList.remove("elem");
+                        document.getElementById("select_video_file").classList.add("elem");
+                        document.getElementById("select_video_file").classList.add("good_elem");
+                        document.getElementById("select_video_file_text").innerHTML = "Cambiar";
+                        document.getElementById("img_check_video").classList.remove("hidden");
+
+                    }
+                });
+
+                //https://sweetalert2.github.io/
+
+                $('#submit_button').on('click', function(e){
+
+                    e.preventDefault();
+                    console.log(document.getElementById("uploader_file").value);
+
+                    if (document.getElementById("uploader_file").value !== "") {
+
+                        let formData = new FormData();
+                        formData.append('video', document.getElementById("uploader_file").files[0]);
+                        formData.append('video_lang', document.getElementById("select_video_lang").value);
+                        formData.append('subtitles_lang', document.getElementById("select_subtitles_lang").value);
+
+                        let form = $('form').serializeArray();
+                        Swal.fire({
+                            title: "¿Quieres subir este vídeo para añadirle subtítulos?",
+                            text: "Esta acción subirá el vídeo a la plataforma y puede tardar un poco. Por favor, no recargue la página.",
+                            showCancelButton: true,
+                            confirmButtonColor: "#DD6B55",
+                            confirmButtonText: "Confirmar",
+                            cancelButtonText: "Cancelar",
+                            showLoaderOnConfirm: true,
+                            preConfirm: () => {
+                                Swal.getCancelButton().remove();
+                                return fetch("/", {
+                                    method: "POST",
+                                    body: formData
+                                }).then(response => {
+                                    if (!response.ok) {
+                                    throw new Error(response.statusText)
+                                    }
+                                    return response.json()
+                                })
+                                .catch(error => {
+                                    Swal.showValidationMessage(
+                                    `Request failed: ${error}`
+                                    )
+                                })
+                            },
+                            allowOutsideClick: () => !Swal.isLoading()
+                            }).then((response) => {
+
+                                let url = "/show_video?video_filename=" + response.value.video_filename + "&subtitles_filename=" + response.value.subtitles_filename;
+                                location.href = url;
+                            });
+
+                    } else {
+
+                        let h1_elem = document.getElementById("error_msg");
+
+                        h1_elem.innerHTML="No puedes generar una transcripción sin seleccionar un vídeo.";
+
+                        setTimeout(function(){
+                            h1_elem.innerHTML="";
+                        }, 3000);
+
+                    }
+                });
+            </script>
+
+        </div>
+
+    </body>
+
+</html>
+
+<!--
+
+-->

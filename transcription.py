@@ -122,13 +122,12 @@ def generate_video_subtitles(video_filename, video_lang, subtitle_lang):
         - subtitle_lang: language of the subtitles
     '''
 
-    #clear_bucket()
+    clear_bucket()
 
-    #success = upload_file(VIDEO_LOCAL_DIRECTORY, video_filename)
+    success = upload_file(VIDEO_LOCAL_DIRECTORY, video_filename)
 
     filename_without_extension = video_filename.split(".")[0]
 
-    """
     json_response = transcribe_video(video_filename, video_lang)
 
     if json_response == "ERROR" or json_response["TranscriptionJob"]["TranscriptionJobStatus"] != "COMPLETED":
@@ -136,11 +135,11 @@ def generate_video_subtitles(video_filename, video_lang, subtitle_lang):
             "code": 404,
             "message": "ERROR with your petition"
         }
-    """
+
 
     subtitle_filename = f"{filename_without_extension}.vtt"
 
-    #success = download_file(SUBTITLE_LOCAL_DIRECTORY, subtitle_filename)
+    success = download_file(SUBTITLE_LOCAL_DIRECTORY, subtitle_filename)
 
     lines_to_let_equal = list()
     lines_to_translate = list()
@@ -174,7 +173,7 @@ def generate_video_subtitles(video_filename, video_lang, subtitle_lang):
     )
 
     print(result)
-    #print(result.get('TranslatedText'))
+    print(result.get('TranslatedText'))
 
     text_translated = result.get('TranslatedText').split("\n")
 
@@ -209,14 +208,11 @@ def generate_video_subtitles(video_filename, video_lang, subtitle_lang):
 
 def dummy(video_filename, subtitle_lang):
     video_filename_without_extension = video_filename.split(".")[0]
-    time.sleep(7)
     return {
         "code": 200,
         "message": "All good.",
         "subtitles_filename": f"{subtitle_lang}_{video_filename_without_extension}.vtt"
     }
-
-generate_video_subtitles("es_tortilla_patatas.mp4", "es-ES", "en-GB")
 
 """
 try:
