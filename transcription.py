@@ -8,7 +8,7 @@ import logging
 
 from botocore.exceptions import ClientError
 
-BUCKET_NAME_FOLDER = "proyecto-haia-transcription"
+BUCKET_NAME_FOLDER = "proyecto-haia"
 BUCKET_NAME = f"s3://{BUCKET_NAME_FOLDER}/"
 
 FILE_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
@@ -91,8 +91,8 @@ def transcribe_video(video_filename, video_lang):
         },
         OutputBucketName = BUCKET_NAME_FOLDER,
         LanguageCode = video_lang,
-        Subtitles = {'Formats': 
-                        ['srt'],
+        Subtitles = {'Formats':
+                        ['vtt', 'srt'],
                     'OutputStartIndex': 1
         }
     )
@@ -122,12 +122,13 @@ def generate_video_subtitles(video_filename, video_lang, subtitle_lang):
         - subtitle_lang: language of the subtitles
     '''
 
-    clear_bucket()
+    #clear_bucket()
 
-    success = upload_file(VIDEO_LOCAL_DIRECTORY, video_filename)
+    #success = upload_file(VIDEO_LOCAL_DIRECTORY, video_filename)
 
     filename_without_extension = video_filename.split(".")[0]
 
+    """
     json_response = transcribe_video(video_filename, video_lang)
 
     if json_response == "ERROR" or json_response["TranscriptionJob"]["TranscriptionJobStatus"] != "COMPLETED":
@@ -135,19 +136,27 @@ def generate_video_subtitles(video_filename, video_lang, subtitle_lang):
             "code": 404,
             "message": "ERROR with your petition"
         }
+    """
 
-    subtitle_filename = f"{filename_without_extension}.srt"
+    subtitle_filename = f"{filename_without_extension}.vtt"
 
-    success = download_file(SUBTITLE_LOCAL_DIRECTORY, subtitle_filename)
+    #success = download_file(SUBTITLE_LOCAL_DIRECTORY, subtitle_filename)
 
     lines_to_let_equal = list()
     lines_to_translate = list()
 
     f = open(os.path.join(SUBTITLE_LOCAL_DIRECTORY, subtitle_filename), "r")
     cont = 0
+    cont_before_vtt = 2
     for line in f:
         line = line.replace("\n", "")
-        if cont % 4 == 2:
+
+        if cont < cont_before_vtt:
+            lines_to_let_equal.append(line)
+            cont += 1
+            continue
+
+        if cont % 4 == 0:
             lines_to_translate.append(line)
         else:
             lines_to_let_equal.append(line)
@@ -165,7 +174,7 @@ def generate_video_subtitles(video_filename, video_lang, subtitle_lang):
     )
 
     print(result)
-    print(result.get('TranslatedText'))
+    #print(result.get('TranslatedText'))
 
     text_translated = result.get('TranslatedText').split("\n")
 
@@ -176,7 +185,14 @@ def generate_video_subtitles(video_filename, video_lang, subtitle_lang):
     index_let_equal = 0
     index_translated = 0
     for _ in range(cont):
-        if cont_write % 4 == 2:
+
+        if cont_write < cont_before_vtt:
+            f.write(lines_to_let_equal[index_let_equal] + "\n")
+            index_let_equal += 1
+            cont_write += 1
+            continue
+
+        if cont_write % 4 == 0:
             f.write(text_translated[index_translated] + "\n")
             index_translated += 1
         else:
@@ -191,16 +207,16 @@ def generate_video_subtitles(video_filename, video_lang, subtitle_lang):
         "subtitles_filename": f"{subtitle_lang}_{subtitle_filename}"
     }
 
-def dummy(video_filename, video_lang, subtitle_lang):
+def dummy(video_filename, subtitle_lang):
     video_filename_without_extension = video_filename.split(".")[0]
-    time.sleep(2)
+    time.sleep(7)
     return {
         "code": 200,
         "message": "All good.",
-        "subtitles_filename": f"{subtitle_lang}_{video_filename_without_extension}.srt"
+        "subtitles_filename": f"{subtitle_lang}_{video_filename_without_extension}.vtt"
     }
 
-
+generate_video_subtitles("es_tortilla_patatas.mp4", "es-ES", "en-GB")
 
 """
 try:

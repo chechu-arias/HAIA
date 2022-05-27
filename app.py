@@ -68,8 +68,8 @@ def load_index():
 
         subtitles_lang = request.form.get('subtitles_lang')
 
-        response = all_work(server_video_filename, video_lang, subtitles_lang)
-
+        response = generate_video_subtitles(server_video_filename, video_lang, subtitles_lang)
+        #response = dummy(server_video_filename, subtitles_lang)
 
         if response["code"] != 200:
             return render_template('index.jinja2', error="Se ha producido un error generando los subtítulos.", show_video=False)
@@ -81,7 +81,7 @@ def load_index():
 
     return render_template('index.jinja2', error="", show_video=False)
 
-
+# https://stackoverflow.com/questions/26971491/how-do-i-link-to-images-not-in-static-folder-in-flask
 #TODO: Add descargar subtitulos, descargar video con subtitulos y generar otro video
 @app.route('/show_video', methods=["GET"])
 def show_video():

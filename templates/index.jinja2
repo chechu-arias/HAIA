@@ -39,8 +39,8 @@
 
                         {% if show_video %}
                             <video width="1080" height="720" controls>
-                                <source src="{{video_filepath}}" type="video/mp4">
-                                <track label="Deutsch" kind="subtitles" srclang="de" src="{{subtitle_filepath}}">
+                                <source src="{{ url_for('static',filename='es_tortilla_patata.mp4') }}" type="video/mp4">
+                                <track kind="subtitles" srclang="en" src="{{ url_for('static',filename='en-GB_es_tortilla_patatas.vtt') }}" default>
                                 Your browser does not support the video tag.
                             </video>
                         {% endif %}
@@ -191,13 +191,14 @@
                         let form = $('form').serializeArray();
                         Swal.fire({
                             title: "¿Quieres subir este vídeo para añadirle subtítulos?",
-                            text: "Esta acción subirá el vídeo a la plataforma y puede tardar un poco.",
+                            text: "Esta acción subirá el vídeo a la plataforma y puede tardar un poco. Por favor, no recargue la página.",
                             showCancelButton: true,
                             confirmButtonColor: "#DD6B55",
                             confirmButtonText: "Confirmar",
                             cancelButtonText: "Cancelar",
                             showLoaderOnConfirm: true,
                             preConfirm: () => {
+                                Swal.getCancelButton().remove();
                                 return fetch("/", {
                                     method: "POST",
                                     body: formData
