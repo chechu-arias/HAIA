@@ -1,7 +1,9 @@
 
+from curses.ascii import SUB
 import os
 
 import json
+import re
 import flask
 
 from flask import Flask, render_template, request, redirect, url_for
@@ -51,8 +53,8 @@ VIDEO_FILENAME_FORMATS = (
 def load_index():
 
     if flask.request.method == 'POST':
-        print(request.form)
-        video_filename = request.files['video']
+
+        video_filename =  request.files['video']
         video_extension = "." + video_filename.filename.split(".")[-1]
         if video_extension not in VIDEO_FILENAME_FORMATS:
             return render_template('index.jinja2', error="El video no tiene una extensión válida.", show_video=False)
@@ -64,24 +66,33 @@ def load_index():
 
         video_lang = request.form.get('video_lang')
 
-        print("VIDEO", video_lang)
-
         subtitles_lang = request.form.get('subtitles_lang')
 
-        print("SUBS", subtitles_lang)
+        response = all_work(server_video_filename, video_lang, subtitles_lang)
 
-        #response = generate_video_subtitles(server_video_filename, video_lang, subtitles_lang)
-        response = dummy()
 
         if response["code"] != 200:
             return render_template('index.jinja2', error="Se ha producido un error generando los subtítulos.", show_video=False)
 
-        return render_template(
-            'index.jinja2',
-            error="",
-            show_video=True,
-            video_filepath=video_filepath,
-            subtitle_filepath=response["subtitles_file"]
-        )
+        return {
+            "video_filename": server_video_filename,
+            "subtitles_filename": response["subtitles_filename"]
+        }
 
     return render_template('index.jinja2', error="", show_video=False)
+
+
+#TODO: Add descargar subtitulos, descargar video con subtitulos y generar otro video
+@app.route('/show_video', methods=["GET"])
+def show_video():
+
+    video_filename = request.args.get("video_filename")
+    subtitle_filename = request.args.get("subtitles_filename")
+
+    return render_template(
+        'index.jinja2',
+        error="",
+        show_video=True,
+        video_filepath=os.path.join(VIDEO_LOCAL_DIRECTORY, video_filename),
+        subtitle_filepath=os.path.join(SUBTITLE_LOCAL_DIRECTORY, subtitle_filename)
+    )

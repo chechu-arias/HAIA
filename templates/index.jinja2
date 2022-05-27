@@ -57,7 +57,7 @@
                 <div id="div_form" class="bordered">
             {% endif %}
 
-                <form method="POST" action="/" enctype="multipart/form-data">
+                <form id="form" method="POST" action="/" enctype="multipart/form-data">
 
                     <div id="div_select_video_file" class="form_elem">
                         <label id="select_video_file" class="elem">
@@ -183,21 +183,42 @@
 
                     if (document.getElementById("uploader_file").value !== "") {
 
-                        let form = $(this).parents('form');
+                        let formData = new FormData();
+                        formData.append('video', document.getElementById("uploader_file").files[0]);
+                        formData.append('video_lang', document.getElementById("select_video_lang").value);
+                        formData.append('subtitles_lang', document.getElementById("select_subtitles_lang").value);
+
+                        let form = $('form').serializeArray();
                         Swal.fire({
                             title: "¿Quieres subir este vídeo para añadirle subtítulos?",
                             text: "Esta acción subirá el vídeo a la plataforma y puede tardar un poco.",
                             showCancelButton: true,
                             confirmButtonColor: "#DD6B55",
                             confirmButtonText: "Confirmar",
-                            cancelButtonText: "Cancelar"
-                        }).then(function(result) {
-                            if (result.isConfirmed) {
-                                form.submit();
-                            } else {
-                                document.getElementById("uploader_file").value = null;
-                            }
-                        });
+                            cancelButtonText: "Cancelar",
+                            showLoaderOnConfirm: true,
+                            preConfirm: () => {
+                                return fetch("/", {
+                                    method: "POST",
+                                    body: formData
+                                }).then(response => {
+                                    if (!response.ok) {
+                                    throw new Error(response.statusText)
+                                    }
+                                    return response.json()
+                                })
+                                .catch(error => {
+                                    Swal.showValidationMessage(
+                                    `Request failed: ${error}`
+                                    )
+                                })
+                            },
+                            allowOutsideClick: () => !Swal.isLoading()
+                            }).then((response) => {
+
+                                let url = "/show_video?video_filename=" + response.value.video_filename + "&subtitles_filename=" + response.value.subtitles_filename;
+                                location.href = url;
+                            });
 
                     } else {
 

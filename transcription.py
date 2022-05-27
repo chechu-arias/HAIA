@@ -188,14 +188,16 @@ def generate_video_subtitles(video_filename, video_lang, subtitle_lang):
     return {
         "code": 200,
         "message": "All good.",
-        "subtitles_file": subtitles_filename
+        "subtitles_filename": f"{subtitle_lang}_{subtitle_filename}"
     }
 
-def dummy():
+def dummy(video_filename, video_lang, subtitle_lang):
+    video_filename_without_extension = video_filename.split(".")[0]
+    time.sleep(2)
     return {
         "code": 200,
         "message": "All good.",
-        "subtitles_file": os.path.join(SUBTITLE_LOCAL_DIRECTORY, f"en-US_es_tortilla_patata.srt")
+        "subtitles_filename": f"{subtitle_lang}_{video_filename_without_extension}.srt"
     }
 
 
