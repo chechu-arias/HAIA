@@ -97,6 +97,15 @@ def show_video():
     video_filename = request.args.get("video_filename")
     subtitle_filename = request.args.get("subtitles_filename")
 
+    if video_filename is None or subtitle_filename is None:
+
+        return redirect(url_for('load_index'))
+
+    if not os.path.exists( os.path.join(VIDEO_LOCAL_DIRECTORY, video_filename) ) \
+        or not os.path.exists( os.path.join(SUBTITLE_LOCAL_DIRECTORY, subtitle_filename) ):
+
+        return redirect(url_for('load_index'))
+
     return render_template(
         'show_video.jinja2',
         error="",
