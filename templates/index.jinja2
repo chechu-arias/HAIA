@@ -38,14 +38,14 @@
                     <div id="div_select_video_file" class="form_elem">
                         <label id="select_video_file" class="elem">
                             <input type="file" id="uploader_file" name="video" accept="video/*">
-                            <span id="select_video_file_text">Seleccionar video</span>
+                            <span id="select_video_file_text">Select a video</span>
                         </label>
                         <img id="img_check_video" class="hidden" src="{{ url_for('static',filename='images/check.png') }}">
                     </div>
 
                     <div id="div_video_lang" class="form_elem">
                         <div id="div_label_video_lang">
-                            <label for="video_lang">Idioma del vídeo:</label>
+                            <label for="video_lang">Video language:</label>
                         </div>
                         <select name="video_lang" class="elem" id="select_video_lang" data-placeholder="Indica el idioma...">
                             <option value="af-ZA">Afrikaans</option>
@@ -88,7 +88,7 @@
                     </div>
 
                     <div id="div_subtitles_lang" class="form_elem">
-                        <label for="subtitles_lang">Idioma de los subtítulos:</label>
+                        <label for="subtitles_lang">Language of the subtitles:</label>
                         <br>
                         <select name="subtitles_lang" class="elem" id="select_subtitles_lang">
                             <option value="af-ZA">Afrikaans</option>
@@ -159,42 +159,77 @@
 
                     if (document.getElementById("uploader_file").value !== "") {
 
+                        let server_error = false;
+
                         let formData = new FormData();
                         formData.append('video', document.getElementById("uploader_file").files[0]);
                         formData.append('video_lang', document.getElementById("select_video_lang").value);
                         formData.append('subtitles_lang', document.getElementById("select_subtitles_lang").value);
 
+                        let subtitles_text = $("#select_subtitles_lang").children("option").filter(":selected").text();
+
                         let form = $('form').serializeArray();
                         Swal.fire({
-                            title: "¿Quieres subir este vídeo para añadirle subtítulos?",
-                            text: "Esta acción subirá el vídeo a la plataforma y puede tardar un poco. Por favor, no recargue la página.",
+                            title: "Do you want to upload this video to add subtitles in " + subtitles_text + " ?",
+                            text: "This action will upload the video to the platform and can take some time. Please, dont reload the page.",
                             showCancelButton: true,
                             confirmButtonColor: "#DD6B55",
-                            confirmButtonText: "Confirmar",
-                            cancelButtonText: "Cancelar",
+                            confirmButtonText: "Confirm",
+                            cancelButtonText: "Cancel",
                             showLoaderOnConfirm: true,
                             preConfirm: () => {
-                                Swal.getCancelButton().remove();
-                                return fetch("/", {
-                                    method: "POST",
-                                    body: formData
-                                }).then(response => {
-                                    if (!response.ok) {
-                                    throw new Error(response.statusText)
-                                    }
-                                    return response.json()
-                                })
-                                .catch(error => {
-                                    Swal.showValidationMessage(
-                                    `Request failed: ${error}`
-                                    )
-                                })
+                                if (!server_error) {
+
+                                    Swal.getCancelButton().remove();
+                                    return fetch("/", {
+                                        method: "POST",
+                                        body: formData
+                                    }).then(response => {
+                                        if (!response.ok) {
+                                            throw new Error(response.statusText)
+                                        }
+                                        return response.json()
+                                    })
+                                    .catch(error => {
+                                        server_error = true;
+                                        Swal.showValidationMessage(
+                                        `Request failed: ${error}`
+                                        )
+
+                                    })
+
+                                }
                             },
                             allowOutsideClick: () => !Swal.isLoading()
                             }).then((response) => {
 
-                                let url = "/show_video?video_filename=" + response.value.video_filename + "&subtitles_filename=" + response.value.subtitles_filename;
-                                location.href = url;
+                                if (response.value.error) {
+
+                                    let h1_elem = document.getElementById("error_msg");
+
+                                    h1_elem.innerHTML=response.value.error;
+
+                                    setTimeout(function(){
+                                        h1_elem.innerHTML="";
+                                    }, 3000);
+
+                                } else if (server_error) {
+
+                                    let h1_elem = document.getElementById("error_msg");
+
+                                    h1_elem.innerHTML="Se ha producido un error interno.";
+
+                                    setTimeout(function(){
+                                        h1_elem.innerHTML="";
+                                    }, 3000);
+
+                                } else {
+
+                                    let url = "/show_video?video_filename=" + response.value.video_filename + "&subtitles_filename=" + response.value.subtitles_filename;
+                                    location.href = url;
+
+                                }
+
                             });
 
                     } else {

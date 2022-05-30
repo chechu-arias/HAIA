@@ -56,8 +56,10 @@ def load_index():
 
         video_filename =  request.files['video']
         video_extension = "." + video_filename.filename.split(".")[-1]
+
         if video_extension not in VIDEO_FILENAME_FORMATS:
-            return render_template('index.jinja2', error="El video no tiene una extensión válida.")
+            print("X")
+            return { "error": "El video no tiene una extensión válida." }
 
         server_video_filename = secure_filename(video_filename.filename)
         video_filepath = os.path.join(VIDEO_LOCAL_DIRECTORY, server_video_filename)
