@@ -13,7 +13,7 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 
 
-from transcription import SUBTITLE_LOCAL_DIRECTORY, VIDEO_LOCAL_DIRECTORY, generate_video_subtitles, dummy
+from transcription import SUBTITLE_LOCAL_DIRECTORY, VIDEO_LOCAL_DIRECTORY, generate_video_subtitles
 
 os.makedirs(VIDEO_LOCAL_DIRECTORY, exist_ok=True)
 

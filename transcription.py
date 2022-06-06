@@ -111,6 +111,44 @@ def transcribe_video(video_filename, video_lang):
 
     return status
 
+################################ AWS TRANSLATE ################################
+
+def translate_lines(lines_to_translate, video_lang, subtitle_lang):
+
+    translate = boto3.client(service_name='translate', region_name='us-east-1', use_ssl=True)
+
+    if len(lines_to_translate) > 50:
+
+        text_translated = list()
+
+        for i in range(0, len(lines_to_translate), 50):
+
+            lines_to_translate_chunk = lines_to_translate[i:i+50]
+
+            text_to_translate = "\n".join(lines_to_translate_chunk)
+
+            result = translate.translate_text(
+                Text=text_to_translate,
+                SourceLanguageCode=video_lang,
+                TargetLanguageCode=subtitle_lang
+            )
+
+            text_translated.extend( result.get('TranslatedText').split("\n") )
+
+    else:
+
+        text_to_translate = "\n".join(lines_to_translate)
+
+        result = translate.translate_text(
+            Text=text_to_translate,
+            SourceLanguageCode=video_lang,
+            TargetLanguageCode=subtitle_lang
+        )
+
+        text_translated = result.get('TranslatedText').split("\n")
+
+    return text_translated
+
 
 def generate_video_subtitles(video_filename, video_lang, subtitle_lang):
     '''
@@ -124,27 +162,29 @@ def generate_video_subtitles(video_filename, video_lang, subtitle_lang):
 
     clear_bucket()
 
-    success = upload_file(VIDEO_LOCAL_DIRECTORY, video_filename)
+    #success = upload_file(VIDEO_LOCAL_DIRECTORY, video_filename)
 
     filename_without_extension = video_filename.split(".")[0]
 
-    json_response = transcribe_video(video_filename, video_lang)
+    #json_response = transcribe_video(video_filename, video_lang)
 
-    if json_response == "ERROR" or json_response["TranscriptionJob"]["TranscriptionJobStatus"] != "COMPLETED":
-        return {
-            "code": 404,
-            "message": "ERROR with your petition"
-        }
+    #if json_response == "ERROR" or json_response["TranscriptionJob"]["TranscriptionJobStatus"] != "COMPLETED":
+    #    return {
+    #        "code": 404,
+    #        "message": "ERROR with your petition"
+    #    }
 
 
     subtitle_filename = f"{filename_without_extension}.vtt"
 
-    success = download_file(SUBTITLE_LOCAL_DIRECTORY, subtitle_filename)
+    #success = download_file(SUBTITLE_LOCAL_DIRECTORY, subtitle_filename)
+
+    # Process VTT file to split lines with numbers and timestamps from lines to actually translate
 
     lines_to_let_equal = list()
     lines_to_translate = list()
 
-    f = open(os.path.join(SUBTITLE_LOCAL_DIRECTORY, subtitle_filename), "r")
+    f = open(os.path.join(SUBTITLE_LOCAL_DIRECTORY, subtitle_filename), "r", encoding="utf8")
     cont = 0
     cont_before_vtt = 2
     for line in f:
@@ -162,24 +202,15 @@ def generate_video_subtitles(video_filename, video_lang, subtitle_lang):
         cont += 1
     f.close()
 
-    text_to_translate = "\n".join(lines_to_translate)
+    # Translation process
 
-    translate = boto3.client(service_name='translate', region_name='us-east-1', use_ssl=True)
+    text_translated = translate_lines(lines_to_translate, video_lang, subtitle_lang)
 
-    result = translate.translate_text(
-        Text=text_to_translate,
-        SourceLanguageCode=video_lang,
-        TargetLanguageCode=subtitle_lang
-    )
-
-    print(result)
-    print(result.get('TranslatedText'))
-
-    text_translated = result.get('TranslatedText').split("\n")
+    # Generate VTT translated file again
 
     subtitles_filename = os.path.join(SUBTITLE_LOCAL_DIRECTORY, f"{subtitle_lang}_{subtitle_filename}")
 
-    f = open( subtitles_filename , "w")
+    f = open( subtitles_filename , "w", encoding="utf8")
     cont_write = 0
     index_let_equal = 0
     index_translated = 0
@@ -205,19 +236,3 @@ def generate_video_subtitles(video_filename, video_lang, subtitle_lang):
         "message": "All good.",
         "subtitles_filename": f"{subtitle_lang}_{subtitle_filename}"
     }
-
-def dummy(video_filename, subtitle_lang):
-    video_filename_without_extension = video_filename.split(".")[0]
-    return {
-        "code": 200,
-        "message": "All good.",
-        "subtitles_filename": f"{subtitle_lang}_{video_filename_without_extension}.vtt"
-    }
-
-"""
-try:
-        response = s3.download_file(BUCKET_NAME_FOLDER, file_name, file_name)
-    except ClientError as e:
-        logging.error(e)
-        return False
-"""
